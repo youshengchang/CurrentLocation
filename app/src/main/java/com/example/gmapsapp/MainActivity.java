@@ -14,9 +14,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,7 +27,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends FragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener{
+public class MainActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 	private static final int GPS_ERRORDIALOG_REQUEST = 9001;
 	GoogleMap mMap;
@@ -42,7 +42,8 @@ public class MainActivity extends FragmentActivity implements GooglePlayServices
 	private static final float DEFAULTZOOM = 15;
 	@SuppressWarnings("unused")
 	private static final String LOGTAG = "Maps";
-    LocationClient mLocationClient;
+    //LocationClient mLocationClient;
+    GoogleApiClient mGoogleApiClient;
 	
 	//Location mLocationClient;
 
@@ -56,8 +57,10 @@ public class MainActivity extends FragmentActivity implements GooglePlayServices
 			if (initMap()) {
 				Toast.makeText(this, "Ready to map!", Toast.LENGTH_SHORT).show();
 				//mMap.setMyLocationEnabled(true);
-                mLocationClient = new LocationClient(this, this, this);
-                mLocationClient.connect();
+                //mLocationClient = new LocationClient(this, this, this);
+                //mLocationClient.connect();
+                buildGoogleApiClient();
+
 			}
 			else {
 				Toast.makeText(this, "Map not available!", Toast.LENGTH_SHORT).show();
@@ -68,6 +71,15 @@ public class MainActivity extends FragmentActivity implements GooglePlayServices
 		}
 
 	}
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
+    }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -117,7 +129,9 @@ public class MainActivity extends FragmentActivity implements GooglePlayServices
 
     private void gotoCurrentLocation(){
 
-        Location currentLocation = mLocationClient.getLastLocation();
+
+        Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
 
         if(currentLocation == null){
             Toast.makeText(this, "The current location is not available", Toast.LENGTH_SHORT).show();
@@ -215,10 +229,11 @@ public class MainActivity extends FragmentActivity implements GooglePlayServices
 		
 	}
 
-	@Override
-	public void onDisconnected() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+
 
 }
