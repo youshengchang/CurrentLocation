@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="C:\AndriodProject\CurrentLocation\app\build\intermediates\pre-dexed\debug\support-annotations-21.0.3-cde0fe43c1d155a84c58787d13ed53f1de001e61.jar" />
+    </item>
+    <item
+        jar="C:\AndriodProject\CurrentLocation\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="C:\AndriodProject\CurrentLocation\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-2be69b739e27fa92a74cf17a28ac9ae4609d4c76.jar" />
+    </item>
+    <item
+        jar="C:\AndriodProject\CurrentLocation\app\build\intermediates\exploded-aar\com.google.android.gms\play-services\4.2.42\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="e5f81129dfb3d02df80126512bc98278ed2bb40a">
+        <dex dex="C:\AndriodProject\CurrentLocation\app\build\intermediates\pre-dexed\debug\classes-ef5f022f8c32bf725c30a49d1666ff07e882b706.jar" />
+    </item>
+    <item
+        jar="C:\AndriodProject\CurrentLocation\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="C:\AndriodProject\CurrentLocation\app\build\intermediates\pre-dexed\debug\classes-15bfb306c346b2f68ca45eb2d67cee49b374f88b.jar" />
+    </item>
+
+</items>

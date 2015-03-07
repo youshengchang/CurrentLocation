@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">My Map</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="seattle">Seattle</string>
+    <string name="newyork">New York</string>
+    <string name="sydney">Sydney</string>
+    <string name="current_location">Current Location</string>
+</resources>
