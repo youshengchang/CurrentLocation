@@ -1,15 +1,19 @@
 package com.example.gmapsapp;
 
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -27,12 +31,25 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
 	private static final int GPS_ERRORDIALOG_REQUEST = 9001;
 	GoogleMap mMap;
+
+    private SharedPreferences store;
+    private String mSearchHistory;
+    private final String SEARCH_KEY = "key";
+
+    private AutoCompleteTextView actv;
+
+    private String[] places;
+    Set<String> set;
+
 
 	@SuppressWarnings("unused")
 	private static final double SEATTLE_LAT = 47.60621,
@@ -58,9 +75,6 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
 
 			if (initMap()) {
 				Toast.makeText(this, "Ready to map!", Toast.LENGTH_SHORT).show();
-				//mMap.setMyLocationEnabled(true);
-                //mLocationClient = new LocationClient(this, this, this);
-                //mLocationClient.connect();
                 buildGoogleApiClient();
 
 			}
@@ -71,8 +85,34 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
 		else {
 			setContentView(R.layout.activity_main);
 		}
+        store = getPreferences(MODE_PRIVATE);
+        actv = (AutoCompleteTextView) findViewById(R.id.editText1);
+        setupAutoList();
 
 	}
+
+    private void setupAutoList() {
+        SharedPreferences.Editor edit = store.edit();
+        set = store.getStringSet(SEARCH_KEY, null);
+        if(set != null){
+            Object[] objs = set.toArray();
+            places = new String[objs.length];
+            for(int i = 0; i < places.length;i++){
+                places[i] = (String)objs[i];
+            }
+        }else{
+            places = new String[]{""};
+            set = new HashSet<String>();
+
+        }
+
+    }
+    private void updateView() {
+        ArrayAdapter adapter = new ArrayAdapter
+                (this,android.R.layout.simple_list_item_1,places);
+        actv.setAdapter(adapter);
+
+    }
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -111,6 +151,7 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
 			SupportMapFragment mapFrag =
 					(SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 			mMap = mapFrag.getMap();
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		}
 		return (mMap != null);
 	}
@@ -135,9 +176,11 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
 
+
         if(currentLocation == null){
             Toast.makeText(this, "The current location is not available", Toast.LENGTH_SHORT).show();
         }else{
+            Toast.makeText(this, "The current location is available: " + currentLocation.getLatitude() + " " + currentLocation.getLongitude() , Toast.LENGTH_SHORT).show();
             LatLng ll = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, DEFAULTZOOM);
             mMap.animateCamera(update);
@@ -148,8 +191,42 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
 	public void geoLocate(View v) throws IOException {
 		hideSoftKeyboard(v);
 
-		EditText et = (EditText) findViewById(R.id.editText1);
-		String location = et.getText().toString();
+//		EditText et = (EditText) findViewById(R.id.editText1);
+//		String location = et.getText().toString();
+//
+//        mSearchHistory = location;
+//        et.setText("");
+//
+//        SharedPreferences.Editor editor = store.edit();
+//        editor.putString(SEARCH_KEY, mSearchHistory);
+//        editor.commit();
+
+        boolean duplicated = false;
+        AutoCompleteTextView actv = (AutoCompleteTextView) findViewById(R.id.editText1);
+        String location = actv.getText().toString();
+        Log.i("AUTOCOMPLETE:", "selected text = " + location);
+        Toast.makeText(this, "Text is " + location, Toast.LENGTH_LONG).show();
+        for(String place: set){
+            if(location.trim().equalsIgnoreCase(place))
+                duplicated = true;
+        }
+        if(!duplicated){
+
+            set.add(location);
+            Object[] obj = set.toArray();
+            Iterator<String> it = set.iterator();
+            Log.i("AUTO", "obj array length = " + obj.length);
+            places = new String[obj.length];
+            for(int i = 0; i< obj.length; i++){
+                places[i] = (String)obj[i];
+            }
+
+
+            SharedPreferences.Editor edit = store.edit();
+            edit.putStringSet(SEARCH_KEY, set);
+            edit.commit();
+            updateView();
+        }
 
 		Geocoder gc = new Geocoder(this);
 		List<Address> list = gc.getFromLocationName(location, 1);
@@ -217,6 +294,9 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
 //			This is part of the answer to the code challenge
 			mMap.setMapType(mgr.getSavedMapType());
 		}
+        //mSearchHistory = store.getString(SEARCH_KEY, "no value");
+        setupAutoList();
+        updateView();
 	}
 
 	@Override
@@ -230,11 +310,12 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
 		Toast.makeText(this, "The connection service is available", Toast.LENGTH_SHORT).show();
         LocationRequest request = LocationRequest.create();
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        request.setInterval(50000);
+        request.setInterval(60000);
         request.setFastestInterval(1000);
 
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
-		
+
+        gotoCurrentLocation();
 	}
 
     @Override
@@ -249,4 +330,24 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 
     }
+
+
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        //mSearchHistory = store.getString(SEARCH_KEY,"no value");
+        setupAutoList();
+        updateView();
+    }
+
+    public void restoreHistory(View v){
+
+        EditText et = (EditText) v.findViewById(R.id.editText1);
+        if(!mSearchHistory.equalsIgnoreCase("no value"))
+            et.setText(mSearchHistory);
+
+    }
+
+
 }
